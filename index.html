@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Sashido Calculator</title>
+
+    <style>
+        form {
+            width: 80%;
+            margin: 50px auto 0;
+            text-align: center;
+        }
+
+        table {
+            width: 100%;
+        }
+
+        table tbody input {
+            width: 100%;
+        }
+
+        table tbody th {
+            text-align: right;
+        }
+    </style>
+</head>
+
+<body>
+    <form>
+        <table>
+            <thead>
+                <tr id="rtd">
+                    <th>FEATURE</th>
+                    <th></th>
+                    <th>QUANTITY</th>
+                    <th>COSTS</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr id="requests">
+                    <td>Monthly Request</td>
+                    <td>
+                        <input type="range" min="100000" max="2000000000" step="100000" value="100000">
+                    </td>
+                    <td>
+                        <span>0</span> ($0.30/100k extra requests)
+                    </td>
+                    <td>
+                        $
+                        <span>0</span>
+                    </td>
+                </tr>
+                <tr id="storage">
+                    <td>File Storage</td>
+                    <td>
+                        <input type="range" min="40" max="1000" step="1" value="40">
+                    </td>
+                    <td>
+                        <span>0</span> ($0.06/GB extra)
+                    </td>
+                    <td>
+                        $
+                        <span>0</span>
+                    </td>
+                </tr>
+                <tr id="database">
+                    <td>Database Storage</td>
+                    <td>
+                        <input type="range" min="1" max="1000" step="1" value="1">
+                    </td>
+                    <td>
+                        <span>0</span> ($16/GB extra)
+                    </td>
+                    <td>
+                        $
+                        <span>0</span>
+                    </td>
+                </tr>
+                <tr id="data">
+                    <td>Data Transfer</td>
+                    <td>
+                        <input type="range" min="500" max="10000" step="1" value="500">
+                    </td>
+                    <td>
+                        <span>0</span> ($0.13/GB extra)
+                    </td>
+                    <td>
+                        $
+                        <span>0</span>
+                    </td>
+                </tr>
+                <tr id="jobs">
+                    <td>Background Jobs</td>
+                    <td>
+                        <input type="range" min="1" max="100" step="1" value="1">
+                    </td>
+                    <td>
+                        <span>0</span> ($10/per extra job)
+                    </td>
+                    <td>
+                        $
+                        <span>0</span>
+                    </td>
+                </tr>
+                <tr id="backups">
+                    <td>Automatic Database Backups</td>
+                    <td>
+                        <input type="range" min="0" max="1000" step="1" value="0">
+                    </td>
+                    <td>
+                        <span>0</span> ($15 + $3.95/GB extra)
+                    </td>
+                    <td>
+                        $
+                        <span>0</span>
+                    </td>
+                </tr>
+                <tr id="total">
+                    <td></td>
+                    <td></td>
+                    <th>TOTAL</th>
+                    <td>
+                        $
+                        <span>4.95</span>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </form>
+
+    <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+    <script>
+        $(() => {
+            const config = {
+                requests: {
+                    cost: 0.3,
+                    start: 100000,
+                    step: 100000,
+                    plus: 0
+                },
+                storage: {
+                    cost: 0.06,
+                    start: 40,
+                    step: 1,
+                    plus: 0
+                },
+                database: {
+                    cost: 16,
+                    start: 1,
+                    step: 1,
+                    plus: 0
+                },
+                data: {
+                    cost: 0.13,
+                    start: 500,
+                    step: 1,
+                    plus: 0
+                },
+                jobs: {
+                    cost: 10,
+                    start: 1,
+                    step: 1,
+                    plus: 0
+                },
+                backups: {
+                    cost: 3.95,
+                    start: 0,
+                    step: 1,
+                    plus: 15
+                }
+            };
+
+            init();
+
+            $("input[type=range]").on("change input", function () {
+                let rangeValue = $(this).val();
+                let rangeId = $(this).closest("tr").attr("id");
+                let finalCost = calculateFinalCost(rangeValue, rangeId);
+                let total = calculateTotalCost();
+
+                $("#" + rangeId + " td:nth-of-type(3) span").text(rangeValue);
+                $("#" + rangeId + " td:nth-of-type(4) span").text(finalCost);
+                $("#total td:nth-of-type(3) span").text(total);
+            });
+
+            function init() {
+                $("table tbody tr:not(#total) td:nth-of-type(3) span").map((index, element) => {
+                    let itemId = $(element).closest("tr").attr("id");
+                    
+                    $(element).text(config[itemId].start);
+                });
+            }
+
+            function calculateFinalCost(rangeValue, rangeId) {
+                let result = ((rangeValue - config[rangeId].start) / config[rangeId].step) * config[rangeId].cost;
+
+                if (config[rangeId].plus > 0 && rangeValue >= (config[rangeId].start + config[rangeId].step)) {
+                    result += config[rangeId].plus - config[rangeId].cost;
+                }
+
+                return Math.round(result * 100) / 100;
+            }
+
+            function calculateTotalCost() {
+                let result = 4.95;
+
+                $("table tbody tr td:nth-of-type(4) span").map((index, element) => {
+                    result += parseFloat($(element).text());
+                });
+
+                return Math.round(result * 100) / 100;
+            }
+        });
+    </script>
+</body>
+
+</html>
